@@ -1,0 +1,336 @@
+---
+title: "Decoding Consumer Trends: A Comprehensive Study of Bellabeat's Wellness Innovations"
+subtitle: "Unveiling Insights into Consumer Behavior and Market Dynamics"
+author: "Madhumitha Y"
+date: "2024-02-18"
+institution: "Bellabeat"
+output:
+  github_document: default
+
+abstract:
+  This case study delves into the innovative features of Bellabeta, analyzing their impact on consumer behavior and market dynamics. We explore key findings and insights derived from the study, shedding light on the success factors that contribute to Bellabeta's market positioning.
+
+keywords: "product innovation, consumer behavior, market dynamics, Bellabeta"
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Bellabeat
+
+## Scenario
+  Bellabeat, a high-tech manufacturer of health-focused products for women.Bellabeat is a successful small company, but they have the potential to become a larger player in the global smart device market. Urška Sršen, co-founder and Chief Creative Officer of Bellabeat, believes that analyzing smart device fitness data could help unlock new growth opportunities for the company. You have been asked to focus on one of Bellabeat’s products and analyze smart device data to gain insight into how consumers are using their smart devices. The insights you discover will then help guide marketing strategy for the company. You will present your analysis to the Bellabeat executive team along with your high-level recommendations for Bellabeat’s marketing strategy.
+  
+## About the company
+    Urška Sršen and Sando Mur founded Bellabeat, a high-tech company that manufactures health-focused smart products. Sršen used her background as an artist to develop beautifully designed technology that informs and inspires women around the world. Collecting data on activity, sleep, stress, and reproductive health has allowed Bellabeat to empower women with knowledge about their own health and habits. Since it was founded in 2013, Bellabeat has grown rapidly and quickly positioned itself as a tech-driven wellness company for women.By 2016, Bellabeat had opened offices around the world and launched multiple products. Bellabeat products became available through a growing number of online retailers in addition to their own e-commerce channel on their website. The company has invested in traditional advertising media, such as radio, out-of-home billboards, print, and television, but focuses on digital marketing extensively. Bellabeat invests year-round in Google Search, maintaining active Facebook and Instagram pages, and consistently engages consumers on Twitter. Additionally, Bellabeat runs video ads on Youtube and display ads on the Google Display Network to support campaigns around key marketing dates.`Sršen knows that an analysis of Bellabeat’s available consumer data would reveal more opportunities for growth. She has asked the marketing analytics team to focus on a Bellabeat product and analyze smart device usage data in order to gain insight into how people are already using their smart devices. Then, using this information, she would like high-level recommendations for how these trends can inform Bellabeat marketing strategy.
+
+## Characters and products
+### Characters 
+* **Urška Sršen**: Bellabeat’s co founder and Chief Creative Officer 
+* **Sando Mur**: Mathematician and Bellabeat cofounder; key member of the Bellabeat executive team 
+* **Bellabeat marketing analytics team**: A team of data analysts responsible for collecting, analyzing, and reporting data that helps guide Bellabeat’s marketing strategy. 
+You joined this team six months ago and have been busy learning about Bellabeat’’s mission and business goals — as well as how you, as a junior data analyst, can help Bellabeat achieve them.
+
+### Products 
+* **Bellabeat app**: The Bellabeat app provides users with health data related to their activity, sleep, stress, menstrual cycle, and mindfulness habits. This data can help users better understand their current habits and make healthy decisions. The Bellabeat app connects to their line of smart wellness products. 
+* **Leaf**: Bellabeat’s classic wellness tracker can be worn as a bracelet, necklace, or clip. The Leaf tracker connects to the Bellabeat app to track activity, sleep, and stress. 
+* **Time**: This wellness watch combines the timeless look of a classic timepiece with smart technology to track user activity, sleep, and stress. The Time watch connects to the Bellabeat app to provide you with insights into your daily wellness.
+* **Spring**: This is a water bottle that tracks daily water intake using smart technology to ensure that you are appropriately hydrated throughout the day. The Spring bottle connects to the Bellabeat app to track your hydration levels. 
+* **Bellabeat membership**: Bellabeat also offers a subscription-based membership program for users. Membership gives users 24/7 access to fully personalized guidance on nutrition, activity, sleep, health and beauty, and mindfulness based on their lifestyle and goals.
+
+Click here for [Link](https://www.kaggle.com/datasets/arashnic/fitbit). This Kaggle data set contains personal fitness tracker from thirty fitbit users. Thirty eligible Fitbit users consented to the submission of personal tracker data, including minute-level output for physical activity, heart rate, and sleep monitoring. It includes information about daily activity, steps, and heart rate that can be used to explore users’ habits.
+
+## R Program begins
+## Loading necessary packages
+```{r}
+install.packages("tidyverse")
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+```
+## Cleaning and merging  the data set
+We are going to take two dailyActivity_merged and sleepDay_merged data sets.
+Use `head()` for preview upto 6 rows
+```{r}
+dailyactivity <- read.csv("/cloud/project/dailyActivity_merged.csv")
+head(dailyactivity)
+```
+
+```{r}
+sleepday <- read.csv("/cloud/project/sleepDay_merged.csv")
+head(sleepday)
+```
+
+Identify column names using `colnames()`function:
+```{r}
+colnames(sleepday)
+```
+
+
+```{r}
+colnames(dailyactivity)
+```
+
+ 
+The `n_distinct()` function is typically used in R with the `dplyr` package to count the number of distinct values in a variable. 
+Let's merge them using `merge()` function:
+```{r}
+# Calculate distinct counts
+dailyactivity_distinct <- n_distinct(dailyactivity$Id)
+sleepday_distinct <- n_distinct(sleepday$Id)
+
+# Create a data frame or tibble
+distinct_counts <- data.frame(
+  Dataset = c("Daily Activity", "Sleep Day"),
+  Distinct_Count = c(dailyactivity_distinct, sleepday_distinct)
+)
+
+# Display the table
+kable(distinct_counts, format = "html", caption = "Distinct Counts of IDs")
+
+```
+Likewise we can check for no.of.rows using `nrow()` function:
+
+```{r}
+# Print the number of rows for daily_activity and sleep_day
+cat("Number of rows in daily_activity:", nrow(dailyactivity), "\n")
+cat("Number of rows in sleep_day:", nrow(sleepday), "\n")
+```
+
+Let's view some summary about these data sets:
+```{r}
+dailyactivity %>%  
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes) %>%
+  summary()
+```
+
+```{r}
+sleepday %>%  
+  select(TotalSleepRecords,
+         TotalMinutesAsleep,
+         TotalTimeInBed) %>%
+  summary()
+```
+
+## Data Visualization
+
+Let's plot some graph to showcase the relation among them.
+```{r}
+ggplot(data = dailyactivity, aes(x = TotalSteps, y = SedentaryMinutes))+ geom_point() +
+  ggtitle("Total Steps Vs Sedentary Minutes") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+The scatter plot of "Total Steps vs. Sedentary Minutes" suggests that there might be an inverse relationship between the number of steps and sedentary minutes. This could imply that individuals who take more steps tend to have fewer sedentary minutes.
+This information could be leveraged in marketing by emphasizing the importance of staying active and reducing sedentary behavior for overall health and well-being.
+
+Now,we can go through some sleeping patterns.
+```{r}
+ggplot(data=sleepday, aes(x=TotalMinutesAsleep, y=TotalTimeInBed)) + geom_point()+ ggtitle("Relationship between sleeping pattern") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+From the above graph, it shows that if the points tend to cluster around a diagonal line from the bottom-left to the top-right, it may indicate a positive correlation between the total time spent in bed and the total minutes asleep. In other words, as the time spent in bed increases, the total minutes asleep also tend to increase.
+
+From a marketing perspective, this could be used to highlight the benefits of adequate sleep and encourage users to prioritize sufficient time in bed for better sleep quality.
+
+
+## Estimating relationship between daily activity and sleep pattern
+We can merge both data sets by id column, by assigning values of all = TRUE we can keep all the values of dailyactivity instead of considering only values which is common for both data sets, i.e we are using outer join here to keep all data values alive.
+
+```{r}
+combined_dataset <- merge(dailyactivity,sleepday,by="Id", all=TRUE)
+head(combined_dataset)
+colnames(combined_dataset)
+cat("Number of rows in combined_dataset:", nrow(combined_dataset))
+```
+
+
+To explore the relationship between activity and sleep in the merged dataset, you can create visualizations and analyze correlations.
+
+```{r}
+ggplot(data=combined_dataset, aes(x =TotalSteps, y=TotalMinutesAsleep))+ geom_point() +
+  ggtitle("Total Steps vs. Total Minutes Asleep") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+**Calculate Correlation**:
+Calculate the correlation coefficient to quantify the strength and direction of the relationship between total steps and total minutes asleep.
+
+```{r}
+cor(combined_dataset$TotalSteps, combined_dataset$TotalMinutesAsleep, use = "complete.obs")
+
+```
+
+With a correlation coefficient of approximately -0.0985 between TotalSteps and TotalMinutesAsleep, it indicates a weak negative linear relationship. The negative sign suggests an inverse relationship, meaning that as the total number of steps increases, the total minutes asleep tends to decrease slightly. However, the strength of this relationship is considered weak as the correlation coefficient is close to 0.
+
+Here's how you can interpret this result:
+
+Correlation Coefficient (-0.0985):
+
+Close to 0: Weak correlation.
+Negative sign: Suggests a negative linear relationship, but it's weak.
+
+**Interpretation**:
+The data suggests a minimal, negative association between the total number of steps and the total minutes asleep.However, the strength of this relationship is not strong, and other factors may contribute to sleep patterns.
+
+Considerations:
+This weak correlation might imply that, on average, taking more steps is associated with a slightly lower total sleep duration.There could be various factors influencing sleep patterns that are not captured in this analysis.
+
+
+## Exploring Associations Between Active Minutes and Sleep Quality Metrics
+
+To investigate the relationship between different types of active minutes (VeryActiveMinutes, FairlyActiveMinutes, LightlyActiveMinutes) and sleep quality metrics (TotalSleepRecords, TotalTimeInBed), you can create scatter plots and calculate correlation coefficients for each pair. Here's an example code snippet using ggplot2 and the base R function `cor`:
+
+
+```{r}
+# Scatter plot of VeryActiveMinutes vs. TotalSleepRecords
+ggplot(data = combined_dataset, aes(x = VeryActiveMinutes, y = TotalSleepRecords)) +
+  geom_point(color = "purple") +
+  ggtitle("Scatter Plot of Total Sleep Records vs. Very Active Minutes") +
+  xlab("Very Active Minutes") +
+  ylab("Total Sleep Records") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Calculate correlation coefficient for VeryActiveMinutes and TotalSleepRecords
+correlation_very_active_sleep <- cor(combined_dataset$VeryActiveMinutes, combined_dataset$TotalSleepRecords, use = "complete.obs")
+print(paste("Correlation between Very Active Minutes and Total Sleep Records:", correlation_very_active_sleep))
+
+# Scatter plot of FairlyActiveMinutes vs. TotalTimeInBed
+ggplot(data = combined_dataset, aes(x = FairlyActiveMinutes, y = TotalTimeInBed)) +
+  geom_point(color = "orange") +
+  ggtitle("Scatter Plot of Total Time In Bed vs. Fairly Active Minutes") +
+  xlab("Fairly Active Minutes") +
+  ylab("Total Time In Bed") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Calculate correlation coefficient for FairlyActiveMinutes and TotalTimeInBed
+correlation_fairly_active_sleep <- cor(combined_dataset$FairlyActiveMinutes, combined_dataset$TotalTimeInBed, use = "complete.obs")
+print(paste("Correlation between Fairly Active Minutes and Total Time In Bed:", correlation_fairly_active_sleep))
+
+# Scatter plot of LightlyActiveMinutes vs. TotalTimeInBed
+ggplot(data = combined_dataset, aes(x = LightlyActiveMinutes, y = TotalTimeInBed)) +
+  geom_point(color = "pink") +
+  ggtitle("Scatter Plot of Total Time In Bed vs. Lightly Active Minutes") +
+  xlab("Lightly Active Minutes") +
+  ylab("Total Time In Bed") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Calculate correlation coefficient for LightlyActiveMinutes and TotalTimeInBed
+correlation_lightly_active_sleep <- cor(combined_dataset$LightlyActiveMinutes, combined_dataset$TotalTimeInBed, use = "complete.obs")
+print(paste("Correlation between Lightly Active Minutes and Total Time In Bed:", correlation_lightly_active_sleep))
+
+```
+
+With the correlation coefficients provided:
+
+**Very Active Minutes and Total Sleep Records:**
+   * Correlation: -0.0412
+   * Interpretation: A weak negative correlation between very active minutes and total sleep records. This suggests that, on average, as very active minutes increase, the total number of sleep records slightly decreases.
+
+**Fairly Active Minutes and Total Time In Bed:**
+   * Correlation: -0.0448
+   * Interpretation: A weak negative correlation between fairly active minutes and total time in bed. This suggests that, on average, as fairly active minutes increase, the total time spent in bed slightly decreases.
+
+**Lightly Active Minutes and Total Time In Bed:**
+   * Correlation: -0.0032
+   * Interpretation: A very weak negative correlation between lightly active minutes and total time in bed. This suggests that there is minimal, if any, association between lightly active minutes and total time in bed.
+
+It's important to note that correlation does not imply causation. While these correlations suggest some degree of association, other factors could influence the observed patterns. Consider exploring these relationships further, potentially by segmenting the data based on user characteristics or conducting additional analyses to uncover more insights.
+
+Additionally, since the correlations are relatively weak, it may be beneficial to explore other potential factors that could influence sleep quality metrics.
+
+
+
+## Estimate relationship between Total steps and Calories burnt
+
+
+
+
+```{r}
+library(ggplot2)
+
+# Scatter plot of TotalSteps vs. Calories
+ggplot(data = combined_dataset, aes(x = TotalSteps, y = Calories)) +
+  geom_point(color = "brown") +
+  ggtitle("Scatter Plot of Calories Burned vs. Daily Steps") +
+  xlab("Total Steps") +
+  ylab("Calories Burned") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Calculate correlation coefficient for TotalSteps and Calories
+correlation_steps_calories <- cor(combined_dataset$TotalSteps, combined_dataset$Calories, use = "complete.obs")
+print(paste("Correlation between Total Steps and Calories Burned:", correlation_steps_calories))
+
+```
+
+
+With a correlation coefficient of approximately 0.4476 between daily steps (`TotalSteps`) and calories burned (`Calories`), it indicates a moderate positive linear relationship. The positive sign suggests a positive association, meaning that as the total number of steps increases, the calories burned also tend to increase moderately.
+
+Here's how you can interpret this result:
+
+**Correlation Coefficient (0.4476):**
+  * Moderate correlation.
+  * Positive sign: Suggests a positive linear relationship, and the strength is moderate.
+
+**Interpretation:**
+  * The data suggests a moderate, positive association between daily steps and calories burned.
+  * On average, individuals who take more steps tend to burn more calories.
+
+**Considerations:**
+  * The moderate correlation implies that there is a noticeable connection between daily steps and calories burned, but other factors may contribute to variations in caloric expenditure.
+  * It's essential to consider individual characteristics and activities that may influence the relationship.
+
+This moderate positive correlation provides valuable insights into how physical activity, represented by daily steps, is related to the energy expenditure measured in calories burned. Further exploration and analysis can help understand the nuances of this relationship.
+
+1. **Conclusion based on Analysis:**
+   - The analysis revealed various relationships between activity metrics and sleep patterns. Notably, there were weak to moderate negative correlations between certain active minutes (Very Active, Fairly Active, Lightly Active) and sleep metrics (Total Sleep Records, Total Time In Bed). Additionally, a moderate positive correlation was observed between daily steps and calories burned.
+
+2. **Application of Insights:**
+   - The team and business can use these insights to tailor marketing strategies for the product. For instance, highlighting the potential benefits of moderate activity on sleep quality could be incorporated into promotional materials. Emphasizing the positive correlation between daily steps and calories burned may also be leveraged to encourage users to achieve higher step counts for increased caloric expenditure.
+
+3. **Next Steps and Further Analysis:**
+   - Based on these findings, the next steps could involve conducting targeted user surveys or interviews to gather qualitative insights on individual preferences, habits, and experiences. Additionally, considering external factors such as stress levels, dietary habits, or specific activities may provide a more comprehensive understanding of the observed relationships. A longitudinal study could be beneficial to explore trends over time and assess the impact of lifestyle changes on activity and sleep patterns.
+
+
+## Conclusion
+The analysis revealed various relationships between activity metrics and sleep patterns. Notably, there were weak to moderate negative correlations between certain active minutes (Very Active, Fairly Active, Lightly Active) and sleep metrics (Total Sleep Records, Total Time In Bed). Additionally, a moderate positive correlation was observed between daily steps and calories burned.
+
+#### Application of Insights:
+   - The team and business can use these insights to tailor marketing strategies for the product. For instance, highlighting the potential benefits of moderate activity on sleep quality could be incorporated into promotional materials. Emphasizing the positive correlation between daily steps and calories burned may also be leveraged to encourage users to achieve higher step counts for increased caloric expenditure.
+
+#### Next Steps and Further Analysis:
+   - Based on these findings, the next steps could involve conducting targeted user surveys or interviews to gather qualitative insights on individual preferences, habits, and experiences. Additionally, considering external factors such as stress levels, dietary habits, or specific activities may provide a more comprehensive understanding of the observed relationships. A longitudinal study could be beneficial to explore trends over time and assess the impact of lifestyle changes on activity and sleep patterns.
+
+#### Additional Data for Expansion:
+   - Gathering additional data, such as user demographics (age, gender), health conditions, and specific activities engaged in during the day, could enhance the analysis. Integration of subjective data, like user-reported sleep quality, could provide a more holistic view. External environmental factors (e.g., weather conditions, work schedules) might also contribute to variations in the observed patterns and could be considered for a more nuanced analysis.
+   
+#### Enhancing Safety with GPS Tracking for Women:
+
+Incorporating GPS tracking into the product can significantly bolster women's safety and contribute to a more robust marketing strategy. This feature not only adds a layer of security for users but also aligns with the broader goal of promoting overall well-being. The ability to track location in real-time provides several benefits:
+
+**Emergency Assistance:**
+   - In case of any safety concerns or emergencies, users can quickly share their location with trusted contacts or emergency services, facilitating prompt assistance.
+
+**Personalized Safety Features:**
+   - GPS tracking enables the development of personalized safety features, such as geofencing alerts or route deviations, empowering users to define safe zones and receive notifications if they deviate from their planned paths.
+
+**Peace of Mind:**
+   - For women, knowing that their location is being monitored can offer a sense of security, especially during outdoor activities or when commuting alone.
+
+**Marketing Message:**
+   - Incorporating GPS tracking for safety in the marketing strategy can be emphasized as a key differentiator. Messages centered around empowering users with tools for personal security can resonate strongly with potential customers.
+
+**User Education:**
+   - The marketing strategy should include educational content on how to use the GPS tracking feature effectively and the value it adds to the overall user experience. Highlighting the ease of use and benefits will encourage adoption.
+
+**Privacy Considerations:**
+   - It's essential to communicate transparently about privacy features and controls, assuring users that their location data is handled securely and giving them control over when and how it is shared.
+
+Including GPS tracking for women's safety not only aligns with current societal needs but also positions the product as a comprehensive solution catering to both physical well-being and personal security.
+
+These steps aim to not only validate and reinforce the current findings but also to refine and deepen the understanding of the complex relationships between physical activity, sleep, and overall well-being.
